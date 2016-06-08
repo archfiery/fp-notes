@@ -36,13 +36,14 @@ eq x y
 -- For each peg in xs, count how many times is occurs in ys
 countColors :: Code -> [Int]
 countColors [] = [0, 0, 0, 0, 0, 0]
-countColors c
-    | (head c) == Red = (mergeList [1, 0, 0, 0, 0, 0] (countColors (tail c)))
-    | (head c) == Green = (mergeList [0, 1, 0, 0, 0, 0] (countColors (tail c)))
-    | (head c) == Blue = (mergeList [0, 0, 1, 0, 0, 0] (countColors (tail c)))
-    | (head c) == Yellow = (mergeList [0, 0, 0, 1, 0, 0] (countColors (tail c)))
-    | (head c) == Orange = (mergeList [0, 0, 0, 0, 1, 0] (countColors (tail c)))
-    | (head c) == Purple = (mergeList [0, 0, 0, 0, 0, 1] (countColors (tail c)))
+countColors (c:cs)
+    | c == Red = (mergeList [1, 0, 0, 0, 0, 0] (countColors cs))
+    | c == Green = (mergeList [0, 1, 0, 0, 0, 0] (countColors cs))
+    | c == Blue = (mergeList [0, 0, 1, 0, 0, 0] (countColors cs))
+    | c == Yellow = (mergeList [0, 0, 0, 1, 0, 0] (countColors cs))
+    | c == Orange = (mergeList [0, 0, 0, 0, 1, 0] (countColors cs))
+    | c == Purple = (mergeList [0, 0, 0, 0, 0, 1] (countColors cs))
+    | otherwise = (mergeList [0, 0, 0, 0, 0, 0] (countColors cs))
 
 mergeList :: [Int] -> [Int] -> [Int]
 mergeList [] [] = []
@@ -54,6 +55,8 @@ matches x y = sum(mergeByMin (countColors x) (countColors y))
 
 mergeByMin :: [Int] -> [Int] -> [Int]
 mergeByMin [] [] = []
+mergeByMin (_:_) [] = []
+mergeByMin [] (_:_) = []
 mergeByMin (x:xs) (y:ys) = (min x y):[] ++ (mergeByMin xs ys)
 
 -- Exercise 3 -----------------------------------------
