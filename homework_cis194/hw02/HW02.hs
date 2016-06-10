@@ -63,17 +63,21 @@ mergeByMin (x:xs) (y:ys) = (min x y):[] ++ (mergeByMin xs ys)
 
 -- Construct a Move from a guess given the actual code
 getMove :: Code -> Code -> Move
-getMove = undefined
+getMove x y = let b = (exactMatches x y) in
+    (Move y b ((matches x y) - b))
 
 -- Exercise 4 -----------------------------------------
 
 isConsistent :: Move -> Code -> Bool
-isConsistent = undefined
+isConsistent (Move x a b) y = (getMove y x) == (Move x a b)
 
 -- Exercise 5 -----------------------------------------
 
 filterCodes :: Move -> [Code] -> [Code]
-filterCodes = undefined
+filterCodes _ [] = []
+filterCodes m (y:ys)
+  | isConsistent m y == True = (y:[]) ++ filterCodes m ys
+  | otherwise = filterCodes m ys
 
 -- Exercise 6 -----------------------------------------
 

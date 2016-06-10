@@ -56,7 +56,11 @@ ex4Tests = [ testF2 "isConsistent test" isConsistent
 -- Exercise 5 -----------------------------------------
 
 ex5Tests :: [Test]
-ex5Tests = []
+ex5Tests = [ testF2 "filterCode test" filterCodes
+             [ (Move [Red, Red, Blue, Green] 1 1, [[Red, Blue, Yellow, Purple], [Red, Blue, Red, Purple]], [[Red, Blue, Yellow, Purple]]),
+               (Move [Red, Red, Blue, Green] 1 1, [], [])
+             ]
+           ]
 
 -- Exercise 6 -----------------------------------------
 
@@ -88,3 +92,6 @@ allTests = concat [ ex1Tests
 main = do
     print (runTests ex1Tests)
     print (runTests ex2Tests)
+    print (runTests ex3Tests)
+    print (runTests ex4Tests)
+    print (runTests ex5Tests)
