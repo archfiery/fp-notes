@@ -29,6 +29,19 @@ runhaskell Setup.hs build
 runhaskell Setup.hs install
 ```
 
+### Cabal sandbox
+Cabal sandbox is a self-contained environment that Haskell packages will be stored seprately.
+
+To create a new Cabal sandbox
+```sh
+cabal sandbox init
+```
+
+and to tear down a Cabal sandbox
+```sh
+cabal sandbox delete
+```
+
 ## Constructors
 Constructor means either *Type Constructor* or *Data Constructor*.
 Haskell requires type names and constructor names to begin with an uppercase letter.
@@ -161,6 +174,60 @@ Some related topics about constructors:
 - [Abstract Data Type](https://wiki.haskell.org/Abstract_data_type)
 - [Concrete Data Type](https://wiki.haskell.org/Concrete_data_type)
 - [Polymorphism](https://wiki.haskell.org/Polymorphism)
+
+## Algebraic Data Types
+**Algebraic** refers to the property that an Algebraic Data Type is created by "algebraic" operations.
+The "algebra" means *sum* and *products*:
+
+- "sum" is alternation `A | B`
+- "product" is combination `A B`
+
+Example:
+
+```haskell
+data BST v = Leaf | Node (BST v) v (BST v)
+```
+
+It is a definition of a binary tree.
+The **BST** followed by `data` keyword means a type constructor for **BST**.
+Then it has two data constructors `Leaf` and `Node`.
+`Leaf` takes no argument and `Leaf` itself is also a value in the type of BST.
+`Node` has 3 arguments, left and right children of the type BST and a value.
+
+It could be translate in Scala like:
+
+```scala
+sealed trait BST[A]
+case class Leaf[A] extends BST[A]
+case class Node[A] (left: BST[A], val: A, right: BST[A]) extends BST[A]
+```
+
+### Pattern Matching
+Pattern matching is about finding the correct constructor to build the data.
+
+#### Case Expression
+
+```
+case exp of
+  pat1 -> expr1
+  pat2 -> expr2
+```
+
+For example
+
+```haskell
+-- name, age, gender
+data Person = Person String Int Char
+
+-- return True if the name is Carl
+carl :: Person -> Bool
+carl p@Person(n _ _) = case n of
+                        "Carl" -> True
+                        _      -> False
+
+```
+
+Note that `_` will also match the pattern, however if the name is "Carl", `_` will not be reached.
 
 
 ## References:
