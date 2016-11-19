@@ -42,6 +42,84 @@ and to tear down a Cabal sandbox
 cabal sandbox delete
 ```
 
+### `.cabal` file
+There are two main entry points: *library* and *executable*.
+Many executables can be defined but only one library.
+`Test-Suite` defines an interface for invoking unit tests from `cabal`.
+
+Example Cabal
+
+```cabal
+name:               mylibrary
+version:            0.1
+cabal-version:      >= 1.10
+author:             Paul Atreides
+license:            MIT
+license-file:       LICENSE
+synopsis:           The code must flow.
+category:           Math
+tested-with:        GHC
+build-type:         Simple
+
+library
+    exposed-modules:
+      Library.ExampleModule1
+      Library.ExampleModule2
+
+    build-depends:
+      base >= 4 && < 5
+
+    default-language: Haskell2010
+
+    ghc-options: -O2 -Wall -fwarn-tabs
+
+executable "example"
+    build-depends:
+        base >= 4 && < 5,
+        mylibrary == 0.1
+    default-language: Haskell2010
+    main-is: Main.hs
+
+Test-Suite test
+  type: exitcode-stdio-1.0
+  main-is: Test.hs
+  default-language: Haskell2010
+  build-depends:
+      base >= 4 && < 5,
+      mylibrary == 0.1
+```
+
+To run an `executable` for a project, use
+
+```sh
+# run the executable
+cabal run
+
+# run the executable <name>
+cabal run <name>
+
+# build the project under ./dist/build folder
+cabal build
+
+# get the ghci
+cabal repl
+cabal repl <name>
+
+cabal install --only-dependencies --enable-tests
+cabal configure --enable-test
+cabal test
+cabal test <name>
+```
+
+### Miscellaneous
+- A little bit more usage can be found over [HERE](http://dev.stephendiehl.com/hask/#cabal).
+- Stack is a new approach to Haskell package structure.
+    - More about Stack: http://dev.stephendiehl.com/hask/#stack
+    - The `stack` command is very similar to `cabal`
+
+
+
+
 ## Constructors
 Constructor means either *Type Constructor* or *Data Constructor*.
 Haskell requires type names and constructor names to begin with an uppercase letter.
@@ -62,7 +140,9 @@ A more interesting article about the constructors:
 ```haskell
 data Maybe a = Just a | Nothing
 ```
+
 Type `Maybe` has one type variable, represented by `a` and two constructors `Just` and `Nothing`.
+`a` can be considered as a generic type parameter.
 - `Maybe` is a type constructor that returns a concrete type.
 -  `Just` is a data constructor that returns a value.
 - `Nothing` is a data constructor that contains a value.[stackoverflow](http://stackoverflow.com/questions/18204308/haskell-type-vs-data-constructor)
