@@ -4,8 +4,8 @@ All notes should be put into this file.
 It is also an experiments to see if the *one file* notes can survive.
 
 ## Cabal
-Cabal is a package system for Haskell software. 
-It enables software to be easily distribute, use and reuse software. 
+Cabal is a package system for Haskell software.
+It enables software to be easily distribute, use and reuse software.
 Cabal packages can depend on other Cabal packages, and the tool provides automated package management.
 
 ```sh
@@ -117,7 +117,48 @@ cabal test <name>
     - More about Stack: http://dev.stephendiehl.com/hask/#stack
     - The `stack` command is very similar to `cabal`
 
+## Stack
+Stack is a modern build tool for Haskell.
+Stack uses curated package sets called `snapshots`.
 
+### Stack commands example
+
+```sh
+stack new helloworld new-template
+```
+It creates a new stack project `helloworld` against template `new-template`.
+
+---
+
+```sh
+stack setup
+```
+Stack will install the right version of GHC at the global stack root directory `/home/$USER/.stack/`.
+
+---
+
+```sh
+stack build
+```
+
+It should be invoked after `stack setup`.
+
+---
+
+```sh
+stack exec
+```
+
+Use stack to run the executables.
+The executables are saved into the `./stack-work` directory.
+
+---
+
+```sh
+stack test
+```
+
+It is equivalent to `stack build --test`.
 
 
 ## Constructors
@@ -309,8 +350,77 @@ carl p@Person(n _ _) = case n of
 
 Note that `_` will also match the pattern, however if the name is "Carl", `_` will not be reached.
 
+## Higher Order Functions
+Notes from [learnyouahaskell.com](http://learnyouahaskell.com/higher-order-functions).
+Every function in Haskell **officially** takes only **one parameter**.
+All functions that accpeted *several parameters* are **curried functions**.
+
+For example:
+```haskell
+max :: (Ord a) => a -> a -> a
+
+-- can also be written as 
+max :: (Ord a) => a -> (a -> a)
+```
+
+Another example:
+```haskell
+multThree :: (Num a) => a -> a -> a -> a
+multThree x y z = x * y * z
+
+-- in fact if we invoke 
+-- multThree 1 2
+-- in ghci, it does not know how to print 
+-- because (a -> a) function is not an instance of `Show` typeclass
+
+a = multThree 1 2
+b = a 3 -- b = 6
+c = a 4 -- c = 8
+```
+
+The `->` is naturally right associative, 
+but it is mandatory if we need to pass a function as parameter.
+
+For example:
+```haskell
+applyTwice :: (a -> a) -> a -> a
+applyTwice f x = f (f x)
+```
+
+`filter` function takes a `f` as operation in and then returns the filtered result.
+A mergesort can be easily implemented by using `filter`.
+
+For example:
+
+```haskell
+quicksort :: (Ord a) => [a] -> [a]
+quicksort [] = []
+quicksort (x:xs) = quicksort(smaller) ++ [x] ++ quicksort(larger)
+  where smaller = quicksort (filter (<=x) xs)
+        larger = quicksort (filter (>x) xs)
+```
+
+### Fold
+A fold takes a binary function, an accumulator and a list to fold up.
+The binary function takes two parameters, the accumulator and the first (or last) 
+element from the list to produce a new accumulator.
+`sum` function can be implemented using `foldl`.
+
+```haskell
+sum' :: (Num a) => [a] -> a
+sum' xs = foldl (\acc x -> acc + x) 0 xs
+
+reverse' :: [a] -> [a]
+reverse' [] = []
+reverse' xs = foldl (\x acc -> acc : x) [] xs
+
+```
+
+
+
 
 ## References:
 - [Cabal User Guide](https://www.haskell.org/cabal/users-guide/installing-packages.html)
 - [An Introduction to Cabal sandboxes](coldwa.st/e/blog/2013-08-20-Cabal-sandbox.html)
 - [Haskell Type](https://wiki.haskell.org/Type)
+- [Learn You A Haskell](http://learnyouahaskell.com/chapters)
