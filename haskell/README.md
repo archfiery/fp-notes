@@ -205,8 +205,22 @@ There are some subtle differences need further reading and experiments.
 TODO: `newtype`
 -->
 
+## Higher Order Function
+
+### Function Composition
+Given an example function that 
+```haskell
+foo :: (b -> c) -> (a -> b) -> (a -> c)
+foo f g = \x -> f (g x)
+```
+
+We can write it in `f . g` means `g` first and then `f`.
+It can be useful when we try to *pipiline* smaller functions into a large one.
+
+
+
 ## Typeclass
-A typeclass is equivalent to an interface from Java.
+A typeclass is (almost) equivalent to an interface from Java.
 It defines some behaviours.
 If a type is part of a typeclass, it means that it supports and implements the behaviour the typeclass describes.
 
@@ -416,7 +430,97 @@ reverse' xs = foldl (\x acc -> acc : x) [] xs
 
 ```
 
+## Functor
 
+A `Functor` class can be thought as a container that uniformly applies the function to every element in the container.
+
+```haskell
+class Functor f where
+    fmap :: (a -> b) -> f a -> f b
+    (<$) :: a        -> f b -> f a
+    (<$) = fmap . const
+```
+
+The `<$>` is essentially the same as `fmap`.
+
+`f` is not a *concrete type* like `Integer`, but a **type function** which takes another type as parameter.
+The *kind* of `f` must be `* -> *`.
+
+For example, `Maybe` is such a type.
+From the container point of view, `fmap` applies a function `f` to every element in the container, without altering the structure.
+From the context point of view, `fmap` applies a function without altering its context.
+`(<$)` replaces the value by a given value without applting a function.
+
+Functor must satisfy *functor laws* as follows:
+- `fmap id = id`
+- `fmap (g . h) = (fmap g) . (fmap h)`
+
+They ensure that `fmap g` does not change the structure of the container, but only the elements.
+
+The first law says that mapping the identity function over every item in a container has no effect.
+The second law says that mapping a composition of two functions over every item in a container is the same as first mappinig one function, and then mapping the other.
+
+
+## Applicative
+Applicative is also called `Applicative Functor`.
+The `Functor` allows us to lift a normal function to a function on computational contexts.
+`Applicative` allows us to apply a function which itself in a context to a value in a context.
+`<*>` (apply) is a tool for this purpose:
+
+```haskell
+<*> :: f (a -> b) -> f a -> f b
+```
+
+- `<*>` is similar to `$` it is function application within a computational context.
+- `<*>` is also similar to `fmap` as the only difference is `f (a -> b)`, a function in a context.
+
+
+`pure` takes a value of any type `a`, and returns a context/container of type `f a`, that is brings values into functors.
+The behaviour of `pure` must satisfy in conjunction with `<*>`.
+
+### Laws
+
+#### Identity Law
+```haskell
+pure id <*> v = v
+```
+It says applying the `pure id` to v does the same like with plain `id` function.
+
+#### Homomorphism
+```haskell
+pure f <*> pure x = pure (f x)
+```
+It says applying the "pure function" to a "pure value" is the same as applying the function to the value first and then bring them into the context by `pure`.
+
+#### Interchange
+```haskell
+u <*> pure y = pure ($ y) <*> u
+```
+`($ y)` is the function that supplies `y` as argument to another function.
+The intechange law says that applying a *context function* `u` to a "pure value" is the same as applying `pure ($ y)` to the *context function* `u`.
+
+#### Composition
+```haskell
+u <*> (v <*> w) = pure (.) <*> u <*> v <*> w
+```
+
+#### Extra
+- Homomorphism allows collapsing multiple adjacent occurrences of `pure` into one
+- Interchange allows moving occurrences of `pure` of `(<*>)`
+- Composition allows reassocaiting `(<*>)`
+
+#### Relate to functor
+Applicative is related to functor as well.
+```haskell
+fmap g x = pure g <*> x
+```
+
+A better example:
+```haskell
+show <$> [1,2,3,4,5]
+-- is equivalent to
+pure show <*> [1,2,3,4,5]
+```
 
 
 ## References:
@@ -424,3 +528,5 @@ reverse' xs = foldl (\x acc -> acc : x) [] xs
 - [An Introduction to Cabal sandboxes](coldwa.st/e/blog/2013-08-20-Cabal-sandbox.html)
 - [Haskell Type](https://wiki.haskell.org/Type)
 - [Learn You A Haskell](http://learnyouahaskell.com/chapters)
+- [Wikibooks Applicative Functors](https://en.wikibooks.org/wiki/Haskell/Applicative_functors)
+- [Typeclassopedia](https://wiki.haskell.org/Typeclassopedia)
