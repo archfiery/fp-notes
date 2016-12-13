@@ -522,6 +522,54 @@ show <$> [1,2,3,4,5]
 pure show <*> [1,2,3,4,5]
 ```
 
+## Lens
+A lens is a first class getter and setter.
+For example
+
+```haskell
+data Point = Point { _x :: Double, _y :: Double } deriving Show
+data Atom  = Atom { _element :: String, _point :: Point } deriving Show
+
+-- Using Template Haskell to auto generate lenses
+makeLenses ''Atom
+makeLenses ''Point
+```
+
+The 2 `makeLenses` calls create 4 lenses: 
+
+```haskell
+element :: Lens' Atom String
+point   :: Lens' Atom Point
+x       :: Lens' Point Double
+y       :: Lens' Point Double
+```
+
+`makeLenses` creates one lens per field prefixed with an underscore. 
+The lens has the same name as the field without the underscore.
+
+Lenses can be combined using function composition.
+
+```haskell
+point     :: Lens' Atom Point
+x         :: Lens' Point Double
+
+-- and therefore
+--point . x :: Lens' Atom Double
+```
+
+`view` and `over` are the two fundamental functions on lenses.
+`set` is a special case of `over`.
+
+They can be expressed as follows:
+
+```haskell
+view :: Lens' a b -> a -> b
+over :: Lens' a b -> (b -> b) -> a -> a
+set  :: Lens' a b ->        b -> a -> a
+
+set lens b = over lens (\_ -> b)
+```
+
 
 ## References:
 - [Cabal User Guide](https://www.haskell.org/cabal/users-guide/installing-packages.html)
@@ -530,3 +578,4 @@ pure show <*> [1,2,3,4,5]
 - [Learn You A Haskell](http://learnyouahaskell.com/chapters)
 - [Wikibooks Applicative Functors](https://en.wikibooks.org/wiki/Haskell/Applicative_functors)
 - [Typeclassopedia](https://wiki.haskell.org/Typeclassopedia)
+- [Lens Tutorial](https://hackage.haskell.org/package/lens-tutorial-1.0.2/docs/Control-Lens-Tutorial.html)
