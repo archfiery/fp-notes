@@ -522,6 +522,42 @@ show <$> [1,2,3,4,5]
 pure show <*> [1,2,3,4,5]
 ```
 
+## Monad
+The definition of typeclass `Monad` in GHC 7.10 is shown as follows:
+```haskell
+class Applicative m => Monad m where
+  return :: a -> m a
+  (>>=)  :: m a -> (a -> m b) -> m b
+  (>>)   :: m a -> m b -> m b
+  m >> n :: m >> = \_ -> n
+
+  fail   :: String -> m a
+```
+
+- `return` is equivalent to `pure` in Applicative.
+- `>>` is a special case of `>>=`, with a default implementation.
+`m >> n` *ignores* the result of `m`, but not its effects.
+
+Here is an example of Maybe Monad:
+
+```haskell
+instance Monad Maybe where
+  return = Just
+  (Just x) >>= g = g x
+  Nothing  >>= _ = Nothing
+```
+
+If we build up a pipe, and one of the result is `Nothing`, and then the entire computation fails.
+`Nothing >>= f` is `Nothing` no matter what `f` is.
+
+An example of List Monad:
+
+```haskell
+instance Monad [] where
+  return = []
+  a >>= f = concat (f <$> a)
+```
+
 ## Lens
 A lens is a first class getter and setter.
 For example
