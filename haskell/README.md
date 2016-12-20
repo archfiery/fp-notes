@@ -3,6 +3,16 @@
 All notes should be put into this file.
 It is also an experiments to see if the *one file* notes can survive.
 
+## Side Effects
+We can consider *side effect* as anything that causes evaluation of an expression to interact with something outside itself.
+There are several examples of side effects:
+- Modifying a global variable
+    - it may affect the evaluation of other expressions
+- Printing to the screen
+    - it may need to be in a certain orer with respect to other writes to the screen
+- Reading from a file or network
+    - the contents of the file can affect the outcome of the expression
+
 ## Cabal
 Cabal is a package system for Haskell software.
 It enables software to be easily distribute, use and reuse software.
@@ -414,7 +424,18 @@ quicksort (x:xs) = quicksort(smaller) ++ [x] ++ quicksort(larger)
         larger = quicksort (filter (>x) xs)
 ```
 
-### Fold
+## Lazy Evaluation
+Under the *strict evaluation* scheme, function arguments are completely evaluated *before* being passed to the function.
+The lazy evaluation may bring the side effects.
+However a language without side effect could be useless.
+The design of the Haskell language makes it allow side effect in a principled, restricted way that did not interfere with the essential purity of the language.
+Choosing the lazy evaluation also enforces purity.
+
+There is a slogan: **Pattern matching drives evaluation**.
+- Expressions are only evaluated when pattern-matched
+- Only as far as necessary for the match to proceed, and no further
+
+
 A fold takes a binary function, an accumulator and a list to fold up.
 The binary function takes two parameters, the accumulator and the first (or last) 
 element from the list to produce a new accumulator.
@@ -427,8 +448,44 @@ sum' xs = foldl (\acc x -> acc + x) 0 xs
 reverse' :: [a] -> [a]
 reverse' [] = []
 reverse' xs = foldl (\x acc -> acc : x) [] xs
-
 ```
+
+The space usage of the lazy evaluation should be considered.
+
+```haskell
+foldl :: (b -> a -> b) -> b -> [a] -> b
+foldl _ z []     = z
+foldl f z (x:xs) = foldl f (f z x) xs
+```
+
+The evaluation process of `foldl (+) 0 [1, 2]` would be
+
+```plaintext
+  foldl (+) 0 [1, 2]
+= foldl (+) (0 + 1) [2]
+= foldl (+) ((0 + 1) + 2) []
+= ((0 + 1) + 2)
+= (1 + 2)
+= 3
+```
+
+`fold'` takes a better approach.
+
+```plaintext
+  foldl' (+) 0 [1, 2]
+= foldl' (+) (0 + 1) [2]
+= foldl' (+) 1 [2]
+= foldl' (+) (1 + 2) []
+= foldl' (+) 3 []
+= 3
+```
+
+The lazy evaluation allows us to work with *infinite data structures*.
+For example, `repeat 1`.
+We can consider the infinite data structure as the one that potentially grows, depending on what parts are actually used.
+
+Constructing a pipelined incremental transformations of a large data structure can be memory efficient due to lazy evaluation.
+Only the required input will be evaluated for each step.
 
 ## Functor
 
@@ -523,6 +580,8 @@ pure show <*> [1,2,3,4,5]
 ```
 
 ## Monad
+
+### Introduction
 The definition of typeclass `Monad` in GHC 7.10 is shown as follows:
 ```haskell
 class Applicative m => Monad m where
@@ -557,6 +616,28 @@ instance Monad [] where
   return = []
   a >>= f = concat (f <$> a)
 ```
+
+`x >>= k` is a computation which runs `x`, 
+and then uses the result(s) of `x` to decide what computation to run second, 
+using the output of the second computation as the result of the entire computation.
+
+In comparison, the structure of an `Applicative` is fixed, whereas the structure of a `Monad` computation can change based on intermediate results.
+It means that parsers built using an Applicative interface can only parse context-free languages.
+In order to parse context-sensitive languages a Monad interface is needed.
+
+### Implement `>>=` in terms of `fmap`, `pure` and `(<*>)`
+We have value `x :: m a` and a function `k :: a -> m b`, and we will apply `k` to `x`.
+We use `fmap` to lift it over the `m`, and we will get `m (m b)`.
+The result we wish to have is `m b`, and there is a function `join` to collapse multiple `m`s. 
+
+The signature of `join` is 
+
+```haskell
+join :: Monad m => m (m a) -> m a
+```
+
+
+
 
 ## Lens
 A lens is a first class getter and setter.

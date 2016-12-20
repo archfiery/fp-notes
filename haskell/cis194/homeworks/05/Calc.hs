@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
-module Calc (Expr) where
+module Calc where
 
 import           ExprT
 import           Parser
